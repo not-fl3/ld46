@@ -7,4 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-macroquad = { git = "https://github.com/not-fl3/macroquad.git", branch = "0.2" }
+#macroquad = { git = "https://github.com/not-fl3/macroquad.git", branch = "0.2" }
+macroquad = {path = "/home/fl3/fun/macroquad" }
+
+[replace]
+"miniquad:0.2.55" = { path = "/home/fl3/fun/miniquad" }
