@@ -3,6 +3,7 @@ use macroquad::*;
 struct Rocket {
     vel: Vec2,
     pos: Vec2,
+    rotation: f32,
 }
 
 struct House {
@@ -143,6 +144,7 @@ async fn main() {
     let mut player = Rocket {
         vel: vec2(0., 0.),
         pos: vec2(0., 10.),
+        rotation: 0.,
     };
 
     let mut world_camera = Camera2D {
@@ -162,11 +164,31 @@ async fn main() {
         begin_mode_2d(world_camera);
 
         if is_key_down(KeyCode::W) {
-            *player.vel.y_mut() += delta * 0.5;
+            let dir = vec2(player.rotation.sin(), player.rotation.cos());
+            let m = vec2(player.pos.x(), player.pos.y() + texture.height() / 2.);
+            let right = vec2(dir.y(), -dir.x());
+
+            particles.push(Particle::random_smoke(
+                m - dir * 150. + right * rand::gen_range(-40., 40.),
+                dir * rand::gen_range(-100., -1000.) + right * rand::gen_range(-2., 2.),
+            ));
+
+            player.vel += dir.normalize() * delta * 1.;
+        }
+
+        if is_key_down(KeyCode::S) {
+            *player.vel.y_mut() -= delta * 0.5;
             particles.push(Particle::random_smoke(
                 player.pos + vec2(rand::gen_range(-40., 40.), rand::gen_range(-10., 10.)),
-                vec2(rand::gen_range(-2., 2.), rand::gen_range(-100., -1000.)),
+                vec2(rand::gen_range(-2., 2.), rand::gen_range(100., 1000.)),
             ));
+        }
+
+        if is_key_down(KeyCode::A) {
+            player.rotation -= delta * 0.5;
+        }
+        if is_key_down(KeyCode::D) {
+            player.rotation += delta * 0.5;
         }
 
         *player.pos.y_mut() += player.vel.y();
@@ -181,6 +203,7 @@ async fn main() {
             zoom = (screen_distance / screen_width()).min(min_zoom);
         }
         world_camera.zoom = world_camera.zoom * 0.99 + zoom * 0.01;
+
         // world_camera.target = player.pos + vec2(0., texture.height() / 2.);
         // player_camera.target = world_camera.target;
         player_camera.zoom = world_camera.zoom.max(0.0006);
@@ -212,6 +235,7 @@ async fn main() {
             WHITE,
             DrawTextureParams {
                 dest_size: Some(vec2(texture.width(), -texture.height())),
+                rotation: -player.rotation,
                 ..Default::default()
             },
         );
