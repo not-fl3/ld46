@@ -95,7 +95,6 @@ impl Planet {
             self.pos.y(),
             self.radius,
             line_thikness,
-            200,
             WHITE,
         );
 
@@ -208,14 +207,15 @@ fn draw_tree(planet_center: Vec2, planet_radius: f32, tree: &Tree, line_thikness
             planet_center.y() + a0.sin() * (planet_radius + i as f32 * tree_tall),
         );
 
-        draw_circle_lines(
-            p1.x(),
-            p1.y(),
-            (*tree_levels as f32 - i as f32) * 10.,
-            line_thikness,
-            3,
-            GREEN,
-        );
+        // Trees used jam-magic macroquad
+        //draw_circle_lines(
+        //    p1.x(),
+        //    p1.y(),
+        //    (*tree_levels as f32 - i as f32) * 10.,
+        //    line_thikness,
+        //    3,
+        //    GREEN,
+        //);
     }
 }
 
@@ -225,7 +225,7 @@ fn magic_zoomed_camera(camera: Camera2D, magic_point: Vec2, zoom: f32) -> Camera
     let dy = (mp_screen.y() - camera.offset.y()) / 2.;
 
     Camera2D {
-        zoom,
+        zoom: vec2(zoom, zoom),
         target: vec2(
             magic_point.x() - dx * (2. / zoom),
             magic_point.y() - dy * (2. / zoom),
@@ -256,7 +256,7 @@ async fn main() {
     let mut world_camera = Camera2D {
         target: player.pos,
         offset: vec2(0., -0.5),
-        zoom: 0.003,
+        zoom: vec2(0.003, 0.003),
         ..Default::default()
     };
 
@@ -270,10 +270,11 @@ async fn main() {
 
         clear_background(BLACK);
 
+	let magic_zoom = world_camera.zoom.x().max(0.0005);
         let magic_camera = magic_zoomed_camera(
             world_camera,
             vec2(player.pos.x(), player.pos.y() + texture.height() / 2.),
-            world_camera.zoom.max(0.0005),
+            magic_zoom,
         );
         begin_mode_2d(magic_camera);
 
@@ -353,6 +354,7 @@ async fn main() {
             let screen_distance = one_screen_time / player.vel.length();
             zoom = (screen_distance / screen_width()).min(min_zoom);
         }
+	let zoom = vec2(zoom, zoom);
         world_camera.zoom = world_camera.zoom * 0.99 + zoom * 0.01;
 
         for particle in particles.iter_mut() {
